@@ -1,0 +1,32 @@
+steps:
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    # Set the Playwright browsers path to a known, persistent location
+    export PLAYWRIGHT_BROWSERS_PATH="/usr/local/bin/.ms-playwright"
+
+    # Install system dependencies for virtualenv and Playwright
+    apt-get update && apt-get install -y python3-venv libxkbcommon0 libgbm1
+
+    # Create the virtual environment and install Python dependencies
+    python3 -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+
+    # Install Playwright browser
+    python3 -m install playwright
+    python3 -m playwright install chromium
+
+    # Deploy the function with environment variables
+    gcloud functions deploy buttermilk_checker_v2_function \
+      --source=. \
+      --trigger-http \
+      --entry-point=buttermilk_checker_v2_function \
+      --runtime=python312 \
+      --region=us-central1 \
+      --timeout=60s \
+      --gen2 \
+      --allow-unauthenticated \
+      --set-env-vars SENDER_PASSWORD="aaor iaye jupy htff",PLAYWRIGHT_BROWSERS_PATH="$$PLAYWRIGHT_BROWSERS_PATH"
